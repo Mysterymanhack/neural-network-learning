@@ -4,10 +4,13 @@ import math
 def sig(x):
     #Sigmoid Function
     return 1/(1+np.exp(-x))
+
 def sigDeriv(x):
     #Derivative of Sigmoid Function
     return sig(x)*(1-sig(x))
+
 class Node:
+
     def __init__(self,bias):
         #Creates a node with specified bias
         self.bias = bias
@@ -17,9 +20,11 @@ class Node:
         self.error = 0
         self.input = 0
         self.errorDerivative = 0
+
     def setValue(self,value):
         #Sets the value of a node
         self.value = value
+
     def updateValue(self):
         #Updates the value of a node based on the bias and the values of the incoming edges. 
         if self.incomingEdges:
@@ -27,24 +32,31 @@ class Node:
             for edge in self.incomingEdges:
                 self.value = self.value + edge.value
             self.value = sig(self.value)
+
     def __str__(self):
         return f"{self.bias}"
+
 class Layer:
+
     def __init__(self,numberOfNodes):
         #Creates a layer with a specified number of nodes
         self.nodes = []
         for i in range(numberOfNodes):
             self.nodes.append(Node(2*random.random()-1))
         self.outgoingEdges = []
+
     def __str__(self):
         return f"{self.nodes}"
+
     def setValue(self,valueArray):
         #Sets the value of all of the nodes in a layer. Used to input values into the first layer of the neural network 
         if len(valueArray) != len(self.nodes):
             raise Exception("Wrong number of values")
         for i in range(len(valueArray)):
             self.nodes[i].setValue(valueArray[i])
+
 class Edge:
+
     def __init__(self,fromNode,toNode,weight):
         #Creates an edge between two nodes with a specified weight
         self.fromNode = fromNode
@@ -55,12 +67,16 @@ class Edge:
         self.totalErrorDerivative = 0
         toNode.incomingEdges.append(self)
         fromNode.outgoingEdges.append(self)
+
     def updateValue(self):
         #Updates the value of an edge based on the previous nodes value.
         self.value = self.weight * self.fromNode.value
+
     def __str__(self):
         return f"{self.weight(self.fromNode)(self.toNode)}"
+
 class MultiLayerPerceptron:
+
     def __init__(self,LayerArray):
         #Creates a neural network with a specified number of layers and nodes in each layer
         self.LayerCount = len(LayerArray)
@@ -73,7 +89,8 @@ class MultiLayerPerceptron:
             toLayer = self.Layers[layernumber + 1]
             for fromNode in fromLayer.nodes:
                 for toNode in toLayer.nodes:
-                    fromLayer.outgoingEdges.append(Edge(fromNode,toNode,2*random.random()-1))
+                    fromLayer.outgoingEdges.append(Edge(fromNode = fromNode,toNode = toNode, weight = (2 * random.random())-1))
+
     def Evaluate(self,inputArray):
         #Calculates the output of the neural network based on some input.
         if len(inputArray) != len(self.Layers[0].nodes):
@@ -100,6 +117,7 @@ class MultiLayerPerceptron:
             #Outputs values of nodes in last layer
             output.append(node.value)
         return output
+
     def Backpropagate(self,trainingData,learningRate):
         #Calculates the error of nodes in the network and updates weights and biases
         output = self.Evaluate(trainingData[0]) #Runs the network in the forward direction
@@ -126,10 +144,12 @@ class MultiLayerPerceptron:
             for edge in layer.outgoingEdges:
                 error = edge.errorDerivative
                 edge.weight = edge.weight - (learningRate * error)
+
     def Train(self,trainingData,learningRate):
         #Trains the neural network
         for i in trainingData:
-            self.Backpropagate(i,learningRate)
+            self.Backpropagate(trainingData = i,learningRate = learningRate)
+
     def __str__(self):
         return f"{self.Layers}"
 
