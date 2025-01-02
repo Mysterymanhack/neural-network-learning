@@ -12,24 +12,24 @@ from torchvision import datasets, transforms
 #Collects closing data from Yahoo Finance API
 ticker_symbol = "SPY"
 ticker = yf.Ticker(ticker_symbol)
-close_data = ticker.history(period="5y")['Close']
+close_data = ticker.history(period="10y")['Close']
 print("Data Collected")
 
 
 #Processes Data 
 def process_data(current_day_index):
     '''
-    Converts raw closing price data to a list of the 200 previous close values as a percentage increase from the base day
+    Converts raw closing price data to a list of the 10 previous close values as a percentage increase from the base day
 
     Input: 
-    index - int - required to be over 200
+    index - int - required to be over 10
 
     Output:
-    (list of 200 previous close value percent changes, current value) - tuple
+    (list of 10 previous close value percent changes, current value) - tuple
     '''
-    if current_day_index < 200:
+    if current_day_index < 10:
         raise ValueError('index too low')
-    base_day_index = current_day_index - 200
+    base_day_index = current_day_index - 10
     base_day_value = close_data[base_day_index]
     processed_close_prices = []
     for day in range(base_day_index,current_day_index):
@@ -39,7 +39,7 @@ def process_data(current_day_index):
 #Converts data to a PyTorch tensor
 dataset_x = []
 dataset_y = []
-for i in range(200,1200):
+for i in range(200,2400):
     data = process_data(i)
     dataset_x.append(data[0])
     dataset_y.append(data[1])
@@ -49,18 +49,18 @@ print("Data Processed")
 
 #Initializes neural Network with 3 layers
 neural_net = nn.Sequential(
-    nn.Linear(200,200),
+    nn.Linear(10,10),
     nn.ReLU(),
-    nn.Linear(200,100),
+    nn.Linear(10,6),
     nn.ReLU(),
-    nn.Linear(100,1)
+    nn.Linear(6,1)
 ) 
 
 #Trains the neural network
-optimizer = optim.Adam(neural_net.parameters(),lr=0.00005)
-for epoch in range(150):
+optimizer = optim.Adam(neural_net.parameters(),lr=0.0004)
+for epoch in range(100):
     total_loss = 0
-    for i in range(0, 800, 20):
+    for i in range(0, 1800, 20):
         batch_x = dataset_x[i:i+20]
         batch_y = dataset_y[i:i+20]
         predicted_y = neural_net(batch_x)
@@ -74,7 +74,7 @@ for epoch in range(150):
 
 #Tests the neural network
 total_loss = 0
-for i in range(800,1000):
+for i in range(1800,2000):
     input = dataset_x[i]
     true_price = dataset_y[i]
     predicted_price = neural_net(input)
